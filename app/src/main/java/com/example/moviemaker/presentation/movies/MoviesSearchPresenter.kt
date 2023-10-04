@@ -8,10 +8,11 @@ import com.example.moviemaker.R
 import com.example.moviemaker.domain.api.MoviesInteractor
 import com.example.moviemaker.domain.models.Movie
 import com.example.moviemaker.ui.movies.models.MoviesState
+import moxy.MvpPresenter
 
 class MoviesSearchPresenter(
     private val context: Context
-) {
+) : MvpPresenter<MoviesView>() {
 
     companion object {
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
@@ -21,21 +22,10 @@ class MoviesSearchPresenter(
     private val moviesInteractor = Creator.provideMoviesInteractor(context)
 
     private val handler = Handler(Looper.getMainLooper())
-
-    private var view: MoviesView? = null
-    private var state: MoviesState? = null
     private var latestSearchText: String? = null
 
-    fun attachView(view: MoviesView) {
-        this.view = view
-        state?.let { view.render(it) }
-    }
 
-    fun detachView() {
-        this.view = null
-    }
-
-    fun onDestroy() {
+    override fun onDestroy() {
         handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
     }
 
@@ -74,7 +64,7 @@ class MoviesSearchPresenter(
                                         context.getString(R.string.something_went_wrong),
                                     )
                                 )
-                                view?.showToast(errorMessage)
+                                viewState.showToast(errorMessage)
                             }
 
                             movies.isEmpty() -> {
@@ -101,7 +91,6 @@ class MoviesSearchPresenter(
     }
 
     private fun renderState(state: MoviesState) {
-        this.state = state
-        this.view?.render(state)
+        viewState.render(state)
     }
 }
